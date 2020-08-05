@@ -26,6 +26,9 @@ dependencies:
   grpc: ^2.2.0
   protobuf: ^1.0.1
   global_configuration: ^1.5.0
+  meta: ^1.2.2
+  equatable: ^1.2.3
+  flutter_bloc: ^6.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

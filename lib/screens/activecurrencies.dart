@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
-import 'package:gctviewer/model/tradingdata_types.dart';
+import 'package:gctviewer/models/tradingdata_types.dart';
 
 import 'package:gctviewer/screens/exchangeinfo.dart';
 import 'package:gctviewer/screens/favoritecurrencies.dart';

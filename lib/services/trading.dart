@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:async/async.dart' show StreamGroup;
 import 'package:gctviewer/common/gctclient.dart';
 
-import 'package:gctviewer/model/tradingdata_types.dart';
+import 'package:gctviewer/models/tradingdata_types.dart';
 
-import 'package:gctviewer/model/grpc/rpc.pb.dart';
-import 'package:gctviewer/model/grpc/rpc.pbgrpc.dart';
+import 'package:gctviewer/models/grpc/rpc.pb.dart';
+import 'package:gctviewer/models/grpc/rpc.pbgrpc.dart';
 
 class TradingService {
   static final TradingService _singleton = new TradingService._internal();
@@ -35,10 +35,8 @@ class TradingService {
         var stream = gctClient.stub.getExchangeTickerStream(
             GetExchangeTickerStreamRequest()..exchange = exchangeName);
         tickerResponseStreams.add(stream);
-        tickerDataStreams.add(stream.map((event) => TickerData(
-            exchange: exchangeName,
-            ticker: event.pair.base + "-" + event.pair.quote,
-            last: event.last)));
+        tickerDataStreams.add(stream.map(
+            (event) => TickerData.fromTickerResponse(exchangeName, event)));
       } catch (e) {
         print("initTickerStreams() exception: " + e.toString());
         await Future.delayed(const Duration(seconds: 15), () {

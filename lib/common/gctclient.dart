@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:gctviewer/model/grpc/rpc.pbgrpc.dart';
+import 'package:gctviewer/models/grpc/rpc.pbgrpc.dart';
 
 class GCTClient {
   ClientChannel channel;
