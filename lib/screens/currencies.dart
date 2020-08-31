@@ -10,7 +10,11 @@ class CurrenciesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CurrenciesBloc, CurrenciesState>(
       builder: (context, state) {
-        if (state is CurrenciesDisplayStarted) {
+        if (state is CurrenciesInitial) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is CurrenciesNetworkFailure) {
           return Center(
             child: CircularProgressIndicator(),
           );

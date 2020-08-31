@@ -15,7 +15,6 @@ class CurrenciesInitial extends CurrenciesState {
 
 // CurrenciesLoadSuccess -  Displaying currency updates
 class CurrenciesDisplayInProgress extends CurrenciesState {
-  // final List<TickerData> currencies;
   final SplayTreeMap<String, TickerData> currencies;
 
   const CurrenciesDisplayInProgress([this.currencies]);
@@ -27,6 +26,14 @@ class CurrenciesDisplayInProgress extends CurrenciesState {
       'CurrenciesDisplayInProgress { currencies: $currencies }';
 }
 
-// CurrenciesLoadFailure - There are no live currency updates to display
-//class CurrenciesLoadFailure extends CurrenciesState {}
-// Add option to favorite
+// CurrenciesNetworkFailure - Cannot retrieve data
+class CurrenciesNetworkFailure extends CurrenciesState {
+  final SplayTreeMap<String, TickerData> currencies;
+
+  const CurrenciesNetworkFailure([this.currencies]);
+  @override
+  List<Object> get props => [currencies];
+
+  @override
+  String toString() => 'CurrenciesNetworkFailure { currencies: $currencies }';
+}

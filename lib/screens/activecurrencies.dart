@@ -6,7 +6,7 @@ import 'package:gctviewer/models/tradingdata_types.dart';
 
 import 'package:gctviewer/screens/exchangeinfo.dart';
 import 'package:gctviewer/screens/favoritecurrencies.dart';
-import 'package:gctviewer/services/trading.dart';
+import 'package:gctviewer/services/trading_repository.dart';
 
 class MyCurrencies extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class MyCurrencies extends StatefulWidget {
 }
 
 class _MyCurrenciesState extends State<MyCurrencies> {
-  var tickerStream = TradingService().tickerStream;
+  var tickerStream = TradingRepository().tickerDataStream;
   final _favoriteCurrencies = Set<String>();
   final _tickerMap = SplayTreeMap<String, TickerData>();
 
@@ -97,8 +97,8 @@ class _MyCurrenciesState extends State<MyCurrencies> {
 
   @override
   Widget build(BuildContext context) {
-    TradingService()
-        .initTickerStreams()
+    TradingRepository()
+        .startApiConnection()
         .then((tradingService) => tradingService.runTickerStreams());
 
     return Scaffold(

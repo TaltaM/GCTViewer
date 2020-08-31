@@ -9,6 +9,8 @@ abstract class CurrenciesEvent extends Equatable {
 
 class CurrenciesDisplayStarted extends CurrenciesEvent {}
 
+class CurrenciesConnectionLost extends CurrenciesEvent {}
+
 class CurrenciesReceived extends CurrenciesEvent {
   final TickerData tickerData;
 

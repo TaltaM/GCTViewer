@@ -4,16 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:gctviewer/screens/screens.dart';
 
-import 'package:gctviewer/common/gctclient.dart';
+import 'package:gctviewer/services/gctapi_provider.dart';
 import 'package:gctviewer/bloc/currencies_bloc.dart';
 // import 'package:gctviewer/screens/activecurrencies.dart';
-import 'package:gctviewer/services/trading.dart';
+import 'package:gctviewer/services/trading_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("config");
-  TradingService().gctClient = GCTClient();
-  TradingService().gctClient.setupChannel(
+  TradingRepository().gctClient = GCTApiProvider();
+  TradingRepository().gctClient.setupChannel(
       GlobalConfiguration().getString("host"),
       GlobalConfiguration().getInt("port"),
       GlobalConfiguration().getString("username"),
@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
           ]),
           body: BlocProvider(
             create: (context) =>
-                CurrenciesBloc(tradingService: TradingService())
+                CurrenciesBloc(tradingService: TradingRepository())
                   ..add(CurrenciesDisplayStarted()),
             child: CurrenciesScreen(),
           )
