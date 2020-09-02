@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gctviewer/services/trading_repository.dart';
 
 class MyTradingServiceInfo extends StatefulWidget {
+  const MyTradingServiceInfo({Key key, @required this.onNavigation})
+      : super(key: key);
+
+  final VoidCallback onNavigation;
+
   @override
   _MyTradingServiceInfoState createState() => _MyTradingServiceInfoState();
 }
