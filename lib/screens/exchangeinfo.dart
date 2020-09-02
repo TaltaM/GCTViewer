@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:gctviewer/services/trading_repository.dart';
 
 class MyTradingServiceInfo extends StatefulWidget {
@@ -11,7 +13,8 @@ class _MyTradingServiceInfoState extends State<MyTradingServiceInfo> {
   String _result = "";
 
   Future<void> _getSystemInfo() async {
-    var result = await TradingRepository().getSystemInfo();
+    var result =
+        await RepositoryProvider.of<TradingRepository>(context).getSystemInfo();
     print(result.uptime);
 
     setState(() {

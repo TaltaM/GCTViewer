@@ -20,7 +20,7 @@ class CurrenciesBloc extends Bloc<CurrenciesEvent, CurrenciesState> {
       : assert(tradingService != null),
         _tradingService = tradingService,
         super(CurrenciesInitial()) {
-    TradingRepository().startApiConnection().then((tradingService) async {
+    _tradingService.startApiConnection().then((tradingService) async {
       final tickerStream = _tradingService.tickerDataStream;
       _tickerSubscription = tickerStream.listen((tickerData) {
         add(CurrenciesReceived(tickerData: tickerData));

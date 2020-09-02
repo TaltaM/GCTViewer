@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
+
 import 'package:gctviewer/services/gctapi_provider.dart';
 import 'package:gctviewer/models/tradingdata_types.dart';
 
@@ -7,13 +9,20 @@ import 'package:gctviewer/models/grpc/rpc.pb.dart';
 import 'package:gctviewer/models/grpc/rpc.pbgrpc.dart';
 
 class TradingRepository {
-  static final TradingRepository _singleton = new TradingRepository._internal();
-  factory TradingRepository() => _singleton;
-  TradingRepository._internal();
+  TradingRepository(
+      {@required String host,
+      @required int port,
+      @required String username,
+      @required String password}) {
+    gctClient = GCTApiProvider();
+    gctClient.setupChannel(host, port, username, password);
+
+    _tickerDataStreamController = StreamController<TickerData>.broadcast();
+  }
 
   GCTApiProvider gctClient;
 
-  final _tickerDataStreamController = StreamController<TickerData>.broadcast();
+  StreamController<TickerData> _tickerDataStreamController;
   Stream<TickerData> get tickerDataStream => _tickerDataStreamController.stream;
 
   var tickerStreamExchanges;
@@ -30,13 +39,17 @@ class TradingRepository {
     tickerStreamExchanges = ["binance", "bittrex"];
 
     print("startApiConnection - connecting client and starting streams");
+    await connectApi();
     startStreams();
     return this;
   }
 
-  Future startStreams() async {
+  Future connectApi() async {
     await gctClient.connect();
     gctClientAvailable = true;
+  }
+
+  Future startStreams() async {
     startTickerStreamSubscriptions();
   }
 
@@ -49,8 +62,9 @@ class TradingRepository {
 
   Future restartStreams() async {
     await cancelStreams();
-    Future.delayed(const Duration(milliseconds: 5000), () {
+    Future.delayed(const Duration(milliseconds: 5000), () async {
       print("restartStreams - connecting client and starting streams");
+      await connectApi();
       startStreams();
     });
   }

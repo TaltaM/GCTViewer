@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:gctviewer/screens/screens.dart';
 
-import 'package:gctviewer/services/gctapi_provider.dart';
 import 'package:gctviewer/bloc/currencies_bloc.dart';
 // import 'package:gctviewer/screens/activecurrencies.dart';
 import 'package:gctviewer/services/trading_repository.dart';
@@ -12,49 +11,55 @@ import 'package:gctviewer/services/trading_repository.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("config");
-  TradingRepository().gctClient = GCTApiProvider();
-  TradingRepository().gctClient.setupChannel(
-      GlobalConfiguration().getString("host"),
-      GlobalConfiguration().getInt("port"),
-      GlobalConfiguration().getString("username"),
-      GlobalConfiguration().getString("password"));
+  TradingRepository tradingRepository = TradingRepository(
+      host: GlobalConfiguration().getString("host"),
+      port: GlobalConfiguration().getInt("port"),
+      username: GlobalConfiguration().getString("username"),
+      password: GlobalConfiguration().getString("password"));
 
-  runApp(MyApp());
+  runApp(MyApp(tradingRepository));
 }
 
 class MyApp extends StatelessWidget {
+  MyApp(this._tradingRepository);
+
+  final TradingRepository _tradingRepository;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Go Crypto Viewer',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.deepPurple,
-        textTheme: Typography.dense2014.copyWith(
-            subtitle1: TextStyle(fontWeight: FontWeight.w800),
-            bodyText2: TextStyle(color: Colors.grey)),
-        dividerTheme: DividerThemeData(
-          thickness: 1,
-          indent: 0,
-          endIndent: 20,
-          color: Colors.grey,
+    return RepositoryProvider(
+      create: (context) => _tradingRepository,
+      child: MaterialApp(
+        title: 'Go Crypto Viewer',
+        theme: ThemeData.dark().copyWith(
+          primaryColor: Colors.deepPurple,
+          textTheme: Typography.dense2014.copyWith(
+              subtitle1: TextStyle(fontWeight: FontWeight.w800),
+              bodyText2: TextStyle(color: Colors.grey)),
+          dividerTheme: DividerThemeData(
+            thickness: 1,
+            indent: 0,
+            endIndent: 20,
+            color: Colors.grey,
+          ),
         ),
-      ),
-      home: Scaffold(
-          appBar: AppBar(title: Text('Active Currencies'), actions: [
-            /*
+        home: Scaffold(
+            appBar: AppBar(title: Text('Active Currencies'), actions: [
+              /*
             IconButton(
                 icon: Icon(Icons.adjust), onPressed: _pushTradingServiceInfo),
             IconButton(
                 icon: Icon(Icons.bookmark), onPressed: _pushFavoriteCurrencies),
                 */
-          ]),
-          body: BlocProvider(
-            create: (context) =>
-                CurrenciesBloc(tradingService: TradingRepository())
-                  ..add(CurrenciesDisplayStarted()),
-            child: CurrenciesScreen(),
-          )
-          /*
+            ]),
+            body: BlocProvider(
+              create: (context) => CurrenciesBloc(
+                  tradingService:
+                      RepositoryProvider.of<TradingRepository>(context))
+                ..add(CurrenciesDisplayStarted()),
+              child: CurrenciesScreen(),
+            )
+            /*
         StreamBuilder<TickerData>(
             stream: tickerStream,
             builder:
@@ -84,7 +89,8 @@ class MyApp extends StatelessWidget {
               }
               return _buildCurrencyList(snapshot.data);
             })*/
-          ),
+            ),
+      ),
     );
   }
 }
