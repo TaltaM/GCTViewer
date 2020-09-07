@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
-import 'package:gctviewer/services/trading.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:gctviewer/services/trading_repository.dart';
 
 class MyTradingServiceInfo extends StatefulWidget {
+  const MyTradingServiceInfo({Key key, @required this.onNavigation})
+      : super(key: key);
+
+  final VoidCallback onNavigation;
+
   @override
   _MyTradingServiceInfoState createState() => _MyTradingServiceInfoState();
 }
@@ -11,7 +18,8 @@ class _MyTradingServiceInfoState extends State<MyTradingServiceInfo> {
   String _result = "";
 
   Future<void> _getSystemInfo() async {
-    var result = await TradingService().getSystemInfo();
+    var result =
+        await RepositoryProvider.of<TradingRepository>(context).getSystemInfo();
     print(result.uptime);
 
     setState(() {
