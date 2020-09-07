@@ -94,8 +94,8 @@ class GCTApiProvider {
   // Creates a new channel and a niew client.
   // State is unavailable until connected
   connect() async {
-    while (stateCubit.state.apiAvailable == false) {
-      await Future.delayed(Duration(seconds: 1));
+    if (!stateCubit.state.apiAvailable) {
+      await stateCubit.firstWhere((element) => element.apiAvailable);
     }
 
     try {

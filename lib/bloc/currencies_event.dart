@@ -7,18 +7,46 @@ abstract class CurrenciesEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class CurrenciesDisplayStarted extends CurrenciesEvent {}
+class CurrenciesStarted extends CurrenciesEvent {}
+
+class CurrenciesLoaded extends CurrenciesEvent {
+  final SplayTreeMap<String, CurrencyItem> currencies;
+
+  const CurrenciesLoaded({@required this.currencies});
+
+  @override
+  List<Object> get props => [currencies];
+
+  @override
+  String toString() => "CurrenciesLoaded { currencies: $currencies }";
+}
 
 class CurrenciesConnectionLost extends CurrenciesEvent {}
 
-class CurrenciesReceived extends CurrenciesEvent {
-  final TickerData tickerData;
+class CurrenciesUpdateReceived extends CurrenciesEvent {
+  final CurrencyItem currencyItemUpdate;
 
-  const CurrenciesReceived({@required this.tickerData});
+  CurrenciesUpdateReceived(String exchange, String ticker,
+      {double last, bool favorite})
+      : currencyItemUpdate = CurrencyItem(exchange, ticker,
+            last: last, favorite: favorite);
 
   @override
-  List<Object> get props => [tickerData];
+  List<Object> get props => [currencyItemUpdate];
 
   @override
-  String toString() => "CurrenciesReceived { tickerData: $tickerData }";
+  String toString() =>
+      "CurrenciesUpdateReceived { currencyItem: $currencyItemUpdate }";
+}
+
+class CurrenciesStatusReceived extends CurrenciesEvent {
+  final CurrencyStatus status;
+
+  const CurrenciesStatusReceived({@required this.status});
+
+  @override
+  List<Object> get props => [status];
+
+  @override
+  String toString() => "CurrenciesStatusReceived { tickerData: $status }";
 }

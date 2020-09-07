@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import 'package:gctviewer/services/gctapi_provider.dart';
-import 'package:gctviewer/models/tradingdata_types.dart';
+import 'package:gctviewer/models/trading_data.dart';
 
 import 'package:gctviewer/models/grpc/rpc.pb.dart';
 import 'package:gctviewer/models/grpc/rpc.pbgrpc.dart';
@@ -14,8 +14,12 @@ class TradingRepository {
       @required int port,
       @required String username,
       @required String password}) {
+    tickerStreamExchanges = ["binance", "bittrex", "ionomy"];
+
     gctClient = GCTApiProvider();
     gctClient.setupChannel(host, port, username, password);
+
+    connectApi();
 
     _tickerDataStreamController = StreamController<TickerData>.broadcast();
   }
@@ -25,7 +29,7 @@ class TradingRepository {
   StreamController<TickerData> _tickerDataStreamController;
   Stream<TickerData> get tickerDataStream => _tickerDataStreamController.stream;
 
-  var tickerStreamExchanges;
+  List<String> tickerStreamExchanges;
   List<Map<String, Stream<TickerResponse>>> tickerResponseStreamsList;
   List<StreamSubscription<TickerResponse>> tickerResponseSubscriptions =
       new List<StreamSubscription<TickerResponse>>();
@@ -35,11 +39,8 @@ class TradingRepository {
       ? gctClient.stateCubit.setClientAvailable()
       : gctClient.stateCubit.setClientUnavailable();
 
-  Future<TradingRepository> startApiConnection() async {
-    tickerStreamExchanges = ["binance", "bittrex"];
-
-    print("startApiConnection - connecting client and starting streams");
-    await connectApi();
+  Future<TradingRepository> startApiStreaming() async {
+    print("startApiStreaming - connecting client and starting streams");
     startStreams();
     return this;
   }
@@ -50,6 +51,10 @@ class TradingRepository {
   }
 
   Future startStreams() async {
+    if (!gctClientAvailable) {
+      await gctClient.stateCubit
+          .firstWhere((element) => element.clientAvailable);
+    }
     startTickerStreamSubscriptions();
   }
 
@@ -120,6 +125,65 @@ class TradingRepository {
   Future<GetInfoResponse> getSystemInfo() async {
     print("Querying GoCryptoTrader for system info..");
     return await gctClient.stub.getInfo(GetInfoRequest());
+  }
+
+  Future<List<TickerData>> getAllTickerData() async {
+    if (!gctClientAvailable) {
+      await gctClient.stateCubit
+          .firstWhere((element) => element.clientAvailable);
+    }
+
+    print(
+        "Querying GoCryptoTrader for ticker data for all enabled currencies at available exchanges..");
+
+    final List<TickerData> tickerDataList = List<TickerData>();
+
+    GetTickersResponse result =
+        await gctClient.stub.getTickers(GetTickersRequest());
+
+    result.tickers.forEach((tickers) {
+      tickers.tickers.forEach((tickerResponse) {
+        tickerDataList.add(
+            TickerData.fromTickerResponse(tickers.exchange, tickerResponse));
+      });
+    });
+    return tickerDataList;
+  }
+
+  Future<List<Ticker>> getExchangeCurrenciesList() async {
+    if (!gctClientAvailable) {
+      await gctClient.stateCubit
+          .firstWhere((element) => element.clientAvailable);
+    }
+
+    print(
+        "Querying GoCryptoTrader for enabled currencies at available exchanges..");
+
+    final list = List<Ticker>();
+    await Future.forEach(tickerStreamExchanges, (exchangeName) async {
+      var result = await gctClient.stub
+          .getExchangePairs(GetExchangePairsRequest()..exchange = exchangeName);
+      result.supportedAssets['spot'].availablePairs
+          .split(',')
+          .forEach((currencyName) {
+        list.add(Ticker(exchangeName, currencyName, enabled: false));
+      });
+      result.supportedAssets['spot'].enabledPairs
+          .split(',')
+          .forEach((currencyName) {
+        list
+            .firstWhere((ticker) =>
+                ticker.exchange == exchangeName &&
+                ticker.ticker == currencyName)
+            .enabled = true;
+//        CurrencyStatus updatedCurrency =
+//            CurrencyStatus(exchangeName, currencyName, enabled: true);
+//        list.removeWhere((currency) => currency.sameCurrency(updatedCurrency));
+//        list.add(updatedCurrency);
+      });
+    });
+
+    return list;
   }
 
   close() {

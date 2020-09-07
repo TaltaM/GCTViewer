@@ -15,7 +15,7 @@ class CurrenciesInitial extends CurrenciesState {
 
 // CurrenciesLoadSuccess -  Displaying currency updates
 class CurrenciesDisplayInProgress extends CurrenciesState {
-  final SplayTreeMap<String, TickerData> currencies;
+  final SplayTreeMap<String, CurrencyItem> currencies;
 
   const CurrenciesDisplayInProgress([this.currencies]);
   @override
@@ -28,7 +28,7 @@ class CurrenciesDisplayInProgress extends CurrenciesState {
 
 // CurrenciesNetworkFailure - Cannot retrieve data
 class CurrenciesNetworkFailure extends CurrenciesState {
-  final SplayTreeMap<String, TickerData> currencies;
+  final SplayTreeMap<String, CurrencyItem> currencies;
 
   const CurrenciesNetworkFailure([this.currencies]);
   @override
