@@ -10,7 +10,7 @@ abstract class CurrenciesEvent extends Equatable {
 class CurrenciesStarted extends CurrenciesEvent {}
 
 class CurrenciesLoaded extends CurrenciesEvent {
-  final SplayTreeMap<String, CurrencyItem> currencies;
+  final Map<int, CurrencyItem> currencies;
 
   const CurrenciesLoaded({@required this.currencies});
 
@@ -28,8 +28,8 @@ class CurrenciesUpdateReceived extends CurrenciesEvent {
 
   CurrenciesUpdateReceived(String exchange, String ticker,
       {double last, bool favorite})
-      : currencyItemUpdate = CurrencyItem(exchange, ticker,
-            last: last, favorite: favorite);
+      : currencyItemUpdate =
+            CurrencyItem(exchange, ticker, last: last, favorite: favorite);
 
   @override
   List<Object> get props => [currencyItemUpdate];

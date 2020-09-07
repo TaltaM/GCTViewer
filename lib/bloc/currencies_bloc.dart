@@ -26,28 +26,24 @@ class CurrenciesBloc extends Bloc<CurrenciesEvent, CurrenciesState> {
         _tradingService = tradingService,
         myCurrencyListBloc = currencyListBloc,
         super(CurrenciesInitial()) {
-    myCurrencyListBloc.listen((cubitState) {
-    })
+    myCurrencyListBloc.listen((cubitState) {})
       ..onData((cubitState) {
         if (cubitState is CurrenciesListInProgress) {
           if (state is CurrenciesDisplayInProgress) {
-            var updatedCurrencies = SplayTreeMap<String, CurrencyItem>();
-            cubitState.currencies.forEach((currency) {
+            var updatedCurrencies = Map<int, CurrencyItem>();
+            cubitState.currencies.forEach((key, currency) {
               if (currency.enabled) {
                 var updatedCurrency = CurrencyItem(
                     currency.exchange, currency.ticker,
                     favorite: currency.favorite,
                     last: ((state as CurrenciesDisplayInProgress)
                             .currencies
-                            .containsKey(
-                                currency.ticker + "@" + currency.exchange)
+                            .containsKey(currency.key)
                         ? (state as CurrenciesDisplayInProgress)
-                            .currencies[
-                                currency.ticker + "@" + currency.exchange]
+                            .currencies[currency.key]
                             .last
                         : null));
-                updatedCurrencies[currency.ticker + "@" + currency.exchange] =
-                    updatedCurrency;
+                updatedCurrencies[currency.key] = updatedCurrency;
               }
             });
             add(CurrenciesLoaded(currencies: updatedCurrencies));
@@ -79,12 +75,10 @@ class CurrenciesBloc extends Bloc<CurrenciesEvent, CurrenciesState> {
 
   Stream<CurrenciesState> _mapCurrenciesStartedToState(
       CurrenciesStarted event) async* {
-    final SplayTreeMap<String, CurrencyItem> currencies =
-        SplayTreeMap<String, CurrencyItem>();
+    final Map<int, CurrencyItem> currencies = Map<int, CurrencyItem>();
     _tradingService.getAllTickerData().then((tickerDataList) {
       tickerDataList.forEach((tickerData) {
-        currencies[tickerData.ticker + "@" + tickerData.exchange] =
-            CurrencyItem.fromTicker(tickerData);
+        currencies[tickerData.key] = CurrencyItem.fromTicker(tickerData);
       });
       add(CurrenciesLoaded(currencies: currencies));
     });
@@ -127,37 +121,26 @@ class CurrenciesBloc extends Bloc<CurrenciesEvent, CurrenciesState> {
       CurrenciesUpdateReceived event) async* {
     final currentState = state;
     if (currentState is CurrenciesInitial) {
-      var updatedCurrencies = SplayTreeMap<String, CurrencyItem>();
+      var updatedCurrencies = Map<int, CurrencyItem>();
 
-      updatedCurrencies[event.currencyItemUpdate.ticker +
-          "@" +
-          event.currencyItemUpdate.exchange] = event.currencyItemUpdate;
+      updatedCurrencies[event.currencyItemUpdate.key] =
+          event.currencyItemUpdate;
 
       yield CurrenciesDisplayInProgress(updatedCurrencies);
     } else if (currentState is CurrenciesDisplayInProgress) {
-      var updatedCurrencies = SplayTreeMap<String, CurrencyItem>.from(
+      var updatedCurrencies = Map<int, CurrencyItem>.from(
           (state as CurrenciesDisplayInProgress).currencies);
-      updatedCurrencies[event.currencyItemUpdate.ticker +
-          "@" +
-          event.currencyItemUpdate.exchange] = updatedCurrencies[
-              event.currencyItemUpdate.ticker +
-                  "@" +
-                  event.currencyItemUpdate.exchange]
-          .copyWith(
+      updatedCurrencies[event.currencyItemUpdate.key] =
+          updatedCurrencies[event.currencyItemUpdate.key].copyWith(
               last: event.currencyItemUpdate.last,
               favorite: event.currencyItemUpdate.favorite);
 
       yield CurrenciesDisplayInProgress(updatedCurrencies);
     } else if (currentState is CurrenciesNetworkFailure) {
-      var updatedCurrencies = SplayTreeMap<String, CurrencyItem>.from(
+      var updatedCurrencies = Map<int, CurrencyItem>.from(
           (state as CurrenciesNetworkFailure).currencies);
-      updatedCurrencies[event.currencyItemUpdate.ticker +
-          "@" +
-          event.currencyItemUpdate.exchange] = updatedCurrencies[
-              event.currencyItemUpdate.ticker +
-                  "@" +
-                  event.currencyItemUpdate.exchange]
-          .copyWith(
+      updatedCurrencies[event.currencyItemUpdate.key] =
+          updatedCurrencies[event.currencyItemUpdate.key].copyWith(
               last: event.currencyItemUpdate.last,
               favorite: event.currencyItemUpdate.favorite);
 

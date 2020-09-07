@@ -10,7 +10,7 @@ abstract class CurrenciesListEvent extends Equatable {
 class CurrenciesListStarted extends CurrenciesListEvent {}
 
 class CurrenciesListLoaded extends CurrenciesListEvent {
-  final List<CurrencyStatus> currencies;
+  final Map<int, CurrencyStatus> currencies;
 
   const CurrenciesListLoaded({@required this.currencies});
 
@@ -24,18 +24,15 @@ class CurrenciesListLoaded extends CurrenciesListEvent {
 class CurrenciesConnectionLost extends CurrenciesListEvent {}
 
 class CurrenciesFavoriteToggled extends CurrenciesListEvent {
-  final String exchangeName;
-  final String tickerName;
+  final int key;
 
-  CurrenciesFavoriteToggled(
-      {@required this.exchangeName, @required this.tickerName});
+  CurrenciesFavoriteToggled({@required this.key});
 
   @override
-  List<Object> get props => [exchangeName, tickerName];
+  List<Object> get props => [key];
 
   @override
-  String toString() =>
-      "CurrenciesFavoriteToggled { exchangeName: $exchangeName tickerName: $tickerName }";
+  String toString() => "CurrenciesFavoriteToggled { key: $key }";
 }
 
 class CurrenciesStatusReceived extends CurrenciesListEvent {

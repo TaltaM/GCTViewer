@@ -107,7 +107,8 @@ class CurrenciesScreen extends StatelessWidget {
             );
           } else if (state is CurrenciesDisplayInProgress) {
             final currencies = List<CurrencyItem>.from(state.currencies.values,
-                growable: false);
+                growable: false)
+              ..sort((a, b) => a.ticker.compareTo(b.ticker));
             return ListView.separated(
               key: Key('__currenciesList__'),
               itemCount: currencies.length,
@@ -126,9 +127,7 @@ class CurrenciesScreen extends StatelessWidget {
                           ),
                           onPressed: () {
                             BlocProvider.of<CurrencyListBloc>(context).add(
-                                CurrenciesFavoriteToggled(
-                                    exchangeName: currency.exchange,
-                                    tickerName: currency.ticker));
+                                CurrenciesFavoriteToggled(key: currency.key));
                           })),
                   title: Text(
                     currency.ticker,

@@ -37,11 +37,11 @@ class CurrencyListBloc extends Bloc<CurrenciesListEvent, CurrenciesListState> {
   Stream<CurrenciesListState> _mapCurrenciesListStartedToState(
       CurrenciesListStarted event) async* {
     _tradingService.getExchangeCurrenciesList().then((tickerList) {
-      final currencyStatusList = tickerList
-          .map((ticker) => CurrencyStatus(ticker.exchange, ticker.ticker,
-              enabled: ticker.enabled))
-          .toList();
-      add(CurrenciesListLoaded(currencies: currencyStatusList));
+      Map<int, CurrencyStatus> currencyStatusMap = Map.fromIterable(tickerList,
+          key: (ticker) => ticker.key,
+          value: (ticker) => CurrencyStatus(ticker.exchange, ticker.ticker,
+              enabled: ticker.enabled));
+      add(CurrenciesListLoaded(currencies: currencyStatusMap));
     });
     yield CurrenciesListInitial();
   }
@@ -56,13 +56,10 @@ class CurrencyListBloc extends Bloc<CurrenciesListEvent, CurrenciesListState> {
     final currentState = state;
     if (currentState is CurrenciesListInProgress) {
       var updatedCurrencies =
-          List<CurrencyStatus>.from(currentState.currencies);
-      var updatedCurrency = updatedCurrencies.firstWhere((element) =>
-          element.exchange == event.exchangeName &&
-          element.ticker == event.tickerName);
-      updatedCurrencies.remove(updatedCurrency);
-      updatedCurrencies
-          .add(updatedCurrency.copyWith(favorite: !updatedCurrency.favorite));
+          Map<int, CurrencyStatus>.from(currentState.currencies);
+      var currency = updatedCurrencies[event.key];
+      updatedCurrencies[event.key] =
+          currency.copyWith(favorite: !currency.favorite);
       yield CurrenciesListInProgress(updatedCurrencies);
     }
   }

@@ -13,7 +13,7 @@ class CurrenciesListInitial extends CurrenciesListState {
 }
 
 class CurrenciesListInProgress extends CurrenciesListState {
-  final List<CurrencyStatus> currencies;
+  final Map<int, CurrencyStatus> currencies;
 
   const CurrenciesListInProgress(this.currencies);
   @override
