@@ -14,8 +14,6 @@ class TradingRepository {
       @required int port,
       @required String username,
       @required String password}) {
-    tickerStreamExchanges = ["binance", "bittrex", "ionomy"];
-
     gctClient = GCTApiProvider();
     gctClient.setupChannel(host, port, username, password);
 
@@ -29,7 +27,6 @@ class TradingRepository {
   StreamController<TickerData> _tickerDataStreamController;
   Stream<TickerData> get tickerDataStream => _tickerDataStreamController.stream;
 
-  List<String> tickerStreamExchanges;
   List<Map<String, Stream<TickerResponse>>> tickerResponseStreamsList;
   List<StreamSubscription<TickerResponse>> tickerResponseSubscriptions =
       new List<StreamSubscription<TickerResponse>>();
@@ -55,7 +52,7 @@ class TradingRepository {
       await gctClient.stateCubit
           .firstWhere((element) => element.clientAvailable);
     }
-    startTickerStreamSubscriptions();
+    startTickerStreamSubscriptions(await getExchangesList());
   }
 
   Future cancelStreams() async {
@@ -74,9 +71,9 @@ class TradingRepository {
     });
   }
 
-  startTickerStreamSubscriptions() {
+  startTickerStreamSubscriptions(List<String> exchanges) {
     tickerResponseStreamsList = new List<Map<String, Stream<TickerResponse>>>();
-    for (final exchangeName in tickerStreamExchanges) {
+    for (final exchangeName in exchanges) {
       try {
         var stream = gctClient.stub.getExchangeTickerStream(
             GetExchangeTickerStreamRequest()..exchange = exchangeName);
@@ -150,17 +147,32 @@ class TradingRepository {
     return tickerDataList;
   }
 
+  Future<List<String>> getExchangesList() async {
+    if (!gctClientAvailable) {
+      await gctClient.stateCubit
+          .firstWhere((element) => element.clientAvailable);
+    }
+
+    print("Querying GoCryptoTrader for enabled exchanges..");
+
+    var result = await gctClient.stub
+        .getExchanges(GetExchangesRequest()..enabled = true);
+    return result.exchanges.toLowerCase().split(',');
+  }
+
   Future<List<Ticker>> getExchangeCurrenciesList() async {
     if (!gctClientAvailable) {
       await gctClient.stateCubit
           .firstWhere((element) => element.clientAvailable);
     }
 
+    final exchangesList = await getExchangesList();
+
     print(
         "Querying GoCryptoTrader for enabled currencies at available exchanges..");
 
     final list = List<Ticker>();
-    await Future.forEach(tickerStreamExchanges, (exchangeName) async {
+    await Future.forEach(exchangesList, (exchangeName) async {
       var result = await gctClient.stub
           .getExchangePairs(GetExchangePairsRequest()..exchange = exchangeName);
       result.supportedAssets['spot'].availablePairs
@@ -176,10 +188,6 @@ class TradingRepository {
                 ticker.exchange == exchangeName &&
                 ticker.ticker == currencyName)
             .enabled = true;
-//        CurrencyStatus updatedCurrency =
-//            CurrencyStatus(exchangeName, currencyName, enabled: true);
-//        list.removeWhere((currency) => currency.sameCurrency(updatedCurrency));
-//        list.add(updatedCurrency);
       });
     });
 
