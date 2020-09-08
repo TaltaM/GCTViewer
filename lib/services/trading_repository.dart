@@ -188,10 +188,6 @@ class TradingRepository {
                 ticker.exchange == exchangeName &&
                 ticker.ticker == currencyName)
             .enabled = true;
-//        CurrencyStatus updatedCurrency =
-//            CurrencyStatus(exchangeName, currencyName, enabled: true);
-//        list.removeWhere((currency) => currency.sameCurrency(updatedCurrency));
-//        list.add(updatedCurrency);
       });
     });
 

@@ -6,7 +6,6 @@ import 'package:gctviewer/bloc/currencies_bloc.dart';
 import 'package:gctviewer/bloc/currencieslist_bloc.dart';
 import 'package:gctviewer/core/navigation_destinations.dart';
 import 'package:gctviewer/models/currency_data.dart';
-import 'package:gctviewer/models/trading_data.dart';
 import 'package:gctviewer/screens/currencies_favorite.dart';
 import 'package:gctviewer/services/trading_repository.dart';
 
